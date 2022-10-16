@@ -2,37 +2,120 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using static LevelSettings;
 
 public class LevelController : MonoBehaviour
 {
     [SerializeField]
     private PrefabSettings _prefabSettings;
     [SerializeField]
+    private LevelSettings _levelSettings;
+    [SerializeField]
     private LevelView _levelView;
     [SerializeField]
-    private float minDelayTime;
-    [SerializeField]
-    private float maxDelayTime;
+    private LevelUIController _levelUIController;
+    private int _gameLevel;
+    private LevelInfo _levelInfo;
+    private TextureGenerator _textureGenerator;
+
+    public Action onGameComplete;
 
     private void Start()
     {
-        _levelView.Init(_prefabSettings);
-        PlayGame();
+        CheckLevelData();
+
+        _textureGenerator = new TextureGenerator();
+        _levelInfo = _levelSettings.GetLevelInfo(_gameLevel);
+        _levelUIController.Init(_levelInfo);
+
+        _levelUIController.onPlay += PlayGame;
+        _levelUIController.onClose += StopGame;
+        _levelUIController.onLevelCompleted += CompleteLevel;
+        _levelUIController.onEndAnimationComplete += SaveAndLoadLevel;
+        _levelView.onCircleClick += ScorePoints;
+
+        onGameComplete += _levelUIController.CompleteGame;
+
+        _textureGenerator.StartGeneration(OnGenerateSprite);
     }
 
-    private void PlayGame() => StartCoroutine(SpawnCircles());
-
-    private IEnumerator SpawnCircles()
+    private void OnGenerateSprite(Dictionary<TextureSize, Sprite> dictionary)
     {
-        _levelView.SpawnCircle();
+        _levelView.Init(_prefabSettings, dictionary);
+    }
+
+    private void CheckLevelData()
+    {
+        if (PlayerPrefs.HasKey("level"))
+            _gameLevel = PlayerPrefs.GetInt("level");
+        else
+            _gameLevel = 1;
+    }
+
+    private void PlayGame()
+    {
+        StartCoroutine(SpawnCircles(_levelInfo.levelSpeed));
+    }
+
+    private void StopGame()
+    {
+        _levelView.StopGame();
+        StopAllCoroutines();
+    }
+
+    private void CompleteLevel()
+    {
+        if (_gameLevel == 3)
+        {
+            StopGame();
+            CompleteGame();
+            return;
+        }
+        _gameLevel++;
+        _textureGenerator.DeleteTextures();
+        SaveAndLoadLevel();
+    }
+
+    private void CompleteGame()
+    {
+        _gameLevel = 1;
+        _textureGenerator.DeleteTextures();
+        onGameComplete?.Invoke();
+    }
+
+    private void SaveAndLoadLevel()
+    {
+        PlayerPrefs.SetInt("level", _gameLevel);
+        SceneManager.LoadScene("game");
+    }
+
+    private void ScorePoints(float circleScale, float maxScale)
+    {
+        _levelUIController.UpdateScore(circleScale, maxScale);
+    }
+
+    private IEnumerator SpawnCircles(float levelSpeed)
+    {
+        _levelView.SpawnCircle(levelSpeed);
         yield return null;
         StartCoroutine(SetSpawnDelay());
     }
 
     private IEnumerator SetSpawnDelay()
     {
-        float randomDelayTime = UnityEngine.Random.Range(minDelayTime, maxDelayTime);
+        float randomDelayTime = UnityEngine.Random.Range(_levelInfo.minTimeDelay, _levelInfo.maxTimeDelay);
         yield return new WaitForSeconds(randomDelayTime);
-        StartCoroutine(SpawnCircles());
+        StartCoroutine(SpawnCircles(_levelInfo.levelSpeed));
+    }
+
+    private void OnDestroy()
+    {
+        _levelUIController.onPlay -= PlayGame;
+        _levelUIController.onClose -= StopGame;
+        _levelUIController.onLevelCompleted -= CompleteLevel;
+        _levelView.onCircleClick -= ScorePoints;
+        onGameComplete -= _levelUIController.CompleteGame;
+        _levelUIController.onEndAnimationComplete -= SaveAndLoadLevel;
     }
 }
