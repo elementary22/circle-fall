@@ -18,6 +18,7 @@ public class LevelController : MonoBehaviour
     private int _gameLevel;
     private LevelInfo _levelInfo;
     private TextureGenerator _textureGenerator;
+    private int _maxLevel = 3;
 
     public Action onGameComplete;
 
@@ -66,7 +67,7 @@ public class LevelController : MonoBehaviour
 
     private void CompleteLevel()
     {
-        if (_gameLevel == 3)
+        if (_gameLevel == _maxLevel)
         {
             StopGame();
             CompleteGame();
@@ -79,9 +80,14 @@ public class LevelController : MonoBehaviour
 
     private void CompleteGame()
     {
-        _gameLevel = 1;
+        ResetLevel();
         _textureGenerator.DeleteTextures();
         onGameComplete?.Invoke();
+    }
+
+    private void ResetLevel()
+    {
+        _gameLevel = 1;
     }
 
     private void SaveAndLoadLevel()

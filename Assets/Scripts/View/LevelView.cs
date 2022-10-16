@@ -9,7 +9,7 @@ public class LevelView : MonoBehaviour
     private Transform _circleContainer;
     [SerializeField]
     private float _minCircleScale;
-    private GameObject _circlePrefab;
+    private PrefabSettings _prefabSettings;
     private float _maxCircleScale;
     private Vector2 _screenBounds;
     private Dictionary<int, Coroutine> _routines;
@@ -21,7 +21,7 @@ public class LevelView : MonoBehaviour
 
     public void Init(PrefabSettings prefabSettings, Dictionary<TextureSize, Sprite> sprites)
     {
-        _circlePrefab = prefabSettings.GetCirclePrefab();
+        _prefabSettings = prefabSettings;
         _screenBounds = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Camera.main.transform.position.z));
         _maxCircleScale = GetMaxScale();
 
@@ -34,7 +34,7 @@ public class LevelView : MonoBehaviour
         _levelSpeed = levelSpeed;
         float scale = UnityEngine.Random.Range(_minCircleScale, _maxCircleScale);
 
-        GameObject cicrlePrefab = GameObject.Instantiate(_circlePrefab);
+        GameObject cicrlePrefab = GameObject.Instantiate(_prefabSettings.GetFigurePrefab(Figures.CIRCLE));
         Circle circle = cicrlePrefab.GetComponent<Circle>();
         cicrlePrefab.transform.SetParent(_circleContainer, false);
 
