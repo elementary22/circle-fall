@@ -23,10 +23,10 @@ public class Timer
         _timer = 0f;
     }
 
-    private void UpdateTimerDisplay(double time)
+    private void UpdateTimerDisplay(float time)
     {
-        float minutes = Mathf.FloorToInt((float)time / 60);
-        float seconds = Mathf.FloorToInt((float)time % 60);
+        float minutes = Mathf.FloorToInt(time / 60);
+        float seconds = Mathf.FloorToInt(time % 60);
 
         string currentTime = string.Format("{00:00}{1:00}", minutes, seconds);
 

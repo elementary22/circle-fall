@@ -15,3 +15,12 @@ MonoBehaviour:
   _prefabList:
   - type: 0
     prefab: {fileID: 2904602786029227248, guid: 6a589613e0b802c49be876a158c66b85, type: 3}
+  _figureSize:
+  - size: 32
+    scale: 0.25
+  - size: 64
+    scale: 0.5
+  - size: 128
+    scale: 0.75
+  - size: 256
+    scale: 1

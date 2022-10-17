@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class BundleLoader : MonoBehaviour
 {
-    private AssetBundle _assetBundle;
 #if UNITY_ANDROID
     private string bundleURL = "https://firebasestorage.googleapis.com/v0/b/circle-fall.appspot.com/o/background_android?alt=media&token=af599529-c97b-4e49-9d80-59f951cd5853";
 #endif
@@ -14,20 +13,22 @@ public class BundleLoader : MonoBehaviour
 #if UNITY_STANDALONE
     private string bundleURL = "https://firebasestorage.googleapis.com/v0/b/circle-fall.appspot.com/o/background?alt=media&token=47109473-a0b3-4917-9aef-6235acea3481";
 #endif
-    private int version = 0;
+    private int _version = 0;
+    private AssetBundle _assetBundle;
     private Action<Sprite> onBackgroundLoaded;
+    
 
-    private static BundleLoader mInstance;
+    private static BundleLoader _instance;
     public static BundleLoader Instance
     {
         get
         {
-            if (mInstance == null)
+            if (_instance == null)
             {
-                mInstance = new GameObject().AddComponent<BundleLoader>();
-                DontDestroyOnLoad(mInstance);
+                _instance = new GameObject().AddComponent<BundleLoader>();
+                DontDestroyOnLoad(_instance);
             }
-            return mInstance;
+            return _instance;
         }
     }
 
@@ -39,21 +40,14 @@ public class BundleLoader : MonoBehaviour
 
     private IEnumerator DownloadAndCache(int level)
     {
-
         if (_assetBundle != null)
         {
             yield return GetSprite(_assetBundle, level);
             yield break;
         }
 
-        WWW www = WWW.LoadFromCacheOrDownload(bundleURL, 1);
+        WWW www = WWW.LoadFromCacheOrDownload(bundleURL, _version);
         yield return www;
-
-        if (!string.IsNullOrEmpty(www.error))
-        {
-            Debug.Log(www.error);
-            yield return null;
-        }
 
         _assetBundle = www.assetBundle;
         yield return GetSprite(_assetBundle, level);

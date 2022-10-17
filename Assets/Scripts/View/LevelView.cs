@@ -79,25 +79,8 @@ public class LevelView : MonoBehaviour
 
     private Sprite GetSprite(float scale)
     {
-        TextureSize size = TextureSize.NORMAL;
-        float result = scale / _maxCircleScale;
-
-        if (result < 0.25f)
-        {
-            size = TextureSize.SMALL;
-        }
-        if (result >= 0.25f && result < 0.5f)
-        {
-            size = TextureSize.MEDIUM;
-        }
-        if (result >= 0.5f && result < 0.75f)
-        {
-            size = TextureSize.NORMAL;
-        }
-        if (result >= 0.75f && result <= 1)
-        {
-            size = TextureSize.LARGE;
-        }
+        float coef = scale / _maxCircleScale;
+        TextureSize size = _prefabSettings.GetFigureTextureSize(coef);
         Sprite sprite = _sprites[size];
         return sprite;
     }
