@@ -1,19 +1,23 @@
 using System;
 using UnityEngine;
 
-public class Circle : MonoBehaviour
+public class Circle : MonoBehaviour, iPoolable
 {
     [SerializeField]
     private SpriteRenderer _spriteRenderer;
-    private float _speed;
-    public float speed { get { return _speed; } }
-    private int _id;
-    public int id { get { return _id; } set { _id = value; } }
-    private float _scale;
-    public float scale { get { return _scale; } }
+    public float Speed { get; private set; }
+    public int Id { get; set; }
+    public float Scale { get; private set; }
 
     public Action<Circle, float> onMove;
     public Action<Circle> onClicked;
+
+    public Circle(float scale, int id, float speed)
+    {
+        this.Scale = scale;
+        this.Id = id;
+        this.Speed = speed;
+    }
 
     private void OnMouseDown()
     {
@@ -22,14 +26,14 @@ public class Circle : MonoBehaviour
 
     public void SetSize(float scale)
     {
-        _scale = scale;
+        Scale = scale;
         var newScale = new Vector3(scale, scale, 0.2f);
         transform.localScale = newScale;
     }
 
     public void SetSprite(Sprite sprite) => _spriteRenderer.sprite = sprite;
 
-    public void SetSpeed(float speed) => _speed = speed;
+    public void SetSpeed(float speed) => Speed = speed;
 
     public void SetTransformPosition(Vector2 screenBounds)
     {
@@ -54,11 +58,16 @@ public class Circle : MonoBehaviour
 
     public void GetFromPool()
     {
-        this.gameObject.SetActive(true);
+        gameObject.SetActive(true);
     }
 
     public void ReturnToPool()
     {
-        this.gameObject.SetActive(false);
+        gameObject.SetActive(false);
+    }
+
+    public void DestroyPoolObject()
+    {
+        Dispose();
     }
 }

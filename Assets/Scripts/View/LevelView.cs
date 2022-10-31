@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
+using Object = UnityEngine.Object;
 
 public class LevelView : MonoBehaviour
 {
@@ -15,7 +16,6 @@ public class LevelView : MonoBehaviour
     private Dictionary<TextureSize, Sprite> _sprites;
     private int _id = 0;
     private float _levelSpeed;
-
     private ObjectPool<Circle> _pool;
 
     public Action<float, float> onCircleClick;
@@ -23,15 +23,14 @@ public class LevelView : MonoBehaviour
     public void Init(PrefabSettings prefabSettings, Dictionary<TextureSize, Sprite> sprites, float speed)
     {
         _prefabSettings = prefabSettings;
-        _screenBounds =
-            Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Camera.main.transform.position.z));
+        _screenBounds = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Camera.main.transform.position.z));
         _levelSpeed = speed;
         _maxCircleScale = GetMaxScale();
 
         _sprites = sprites;
         _routines = new Dictionary<int, Coroutine>();
-         _pool = new ObjectPool<Circle>(
-             CreateCircle,GetFromPool,ReturnToPool, DestroyCircle, false, 5, 10);
+        _pool = new ObjectPool<Circle>(CreateCircle, circle => circle.GetFromPool(), circle => circle.ReturnToPool(),
+        circle => circle.DestroyPoolObject(), false, 5, 10);
     }
     
     private Circle CreateCircle()
@@ -42,27 +41,12 @@ public class LevelView : MonoBehaviour
         return circle;
     }
     
-    private void GetFromPool(Circle circle)
-    {
-        circle.gameObject.SetActive(true);
-    }
-
-    private void ReturnToPool(Circle circle)
-    {
-        circle.gameObject.SetActive(false);
-    }
-    
-    private void DestroyCircle(Circle circle)
-    {
-        circle.Dispose();
-    }
-
     public void SpawnCircle()
     {
         var scale = UnityEngine.Random.Range(_minCircleScale, _maxCircleScale);
         var circle = _pool.Get();
 
-        circle.id = _id;
+        circle.Id = _id;
         circle.SetSize(scale);
         circle.SetSprite(GetSprite(scale));
         circle.SetSpeed(GetCircleSpeed(scale));
@@ -73,11 +57,11 @@ public class LevelView : MonoBehaviour
 
     private void OnCircleClicked(Circle circle)
     {
-        if (_routines[circle.id] == null)
+        if (_routines[circle.Id] == null)
             return;
 
-        onCircleClick?.Invoke(circle.scale, _maxCircleScale);
-        StopCoroutine(_routines[circle.id]);
+        onCircleClick?.Invoke(circle.Scale, _maxCircleScale);
+        StopCoroutine(_routines[circle.Id]);
         _pool.Release(circle);
     }
 
@@ -94,15 +78,15 @@ public class LevelView : MonoBehaviour
 
     private float GetCircleSpeed(float scale)
     {
-        float speed = _levelSpeed / scale;
+        var speed = _levelSpeed / scale;
         return speed;
     }
 
     private Sprite GetSprite(float scale)
     {
-        float coef = scale / _maxCircleScale;
-        TextureSize size = _prefabSettings.GetFigureTextureSize(coef);
-        Sprite sprite = _sprites[size];
+        var coef = scale / _maxCircleScale;
+        var size = _prefabSettings.GetFigureTextureSize(coef);
+        var sprite = _sprites[size];
         return sprite;
     }
 
@@ -113,13 +97,13 @@ public class LevelView : MonoBehaviour
         _pool.Clear();
     }
 
-    private void MoveCircle(Circle circle, float height)
+    private void MoveCircle(Circle circle, float height) 
     {
         var startPosition = circle.transform.position;
         var finishPosition = new Vector3(startPosition.x, -_screenBounds.y - height, startPosition.z);
-
-        var routine = StartCoroutine(Move(circle, startPosition, finishPosition, circle.speed));
-        _routines.Add(circle.id, routine);
+        var routine = StartCoroutine(Move(circle, startPosition, finishPosition, circle.Speed));
+        
+        _routines.Add(circle.Id, routine);
     }
 
     private IEnumerator Move(Circle circle, Vector3 startPoint, Vector3 finishPoint, float speed)
