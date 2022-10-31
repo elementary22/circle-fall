@@ -43,7 +43,7 @@ public class LevelController : MonoBehaviour
 
     private void OnGenerateSprite(Dictionary<TextureSize, Sprite> dictionary)
     {
-        _levelView.Init(_prefabSettings, dictionary);
+        _levelView.Init(_prefabSettings, dictionary, _levelInfo.levelSpeed);
     }
 
     private void CheckLevelData()
@@ -56,7 +56,7 @@ public class LevelController : MonoBehaviour
 
     private void PlayGame()
     {
-        StartCoroutine(SpawnCircles(_levelInfo.levelSpeed));
+        StartCoroutine(SpawnCircles());
     }
 
     private void StopGame()
@@ -101,9 +101,9 @@ public class LevelController : MonoBehaviour
         _levelUIController.UpdateScore(circleScale, maxScale);
     }
 
-    private IEnumerator SpawnCircles(float levelSpeed)
+    private IEnumerator SpawnCircles()
     {
-        _levelView.SpawnCircle(levelSpeed);
+        _levelView.SpawnCircle();
         yield return null;
         StartCoroutine(SetSpawnDelay());
     }
@@ -112,7 +112,7 @@ public class LevelController : MonoBehaviour
     {
         float randomDelayTime = UnityEngine.Random.Range(_levelInfo.minTimeDelay, _levelInfo.maxTimeDelay);
         yield return new WaitForSeconds(randomDelayTime);
-        StartCoroutine(SpawnCircles(_levelInfo.levelSpeed));
+        StartCoroutine(SpawnCircles());
     }
 
     private void OnDestroy()

@@ -46,5 +46,4 @@ public class Timer
             yield return null;
         }
     }
-
 }

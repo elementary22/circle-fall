@@ -15,26 +15,26 @@ public class BundleLoader : MonoBehaviour
 #endif
     private int _version = 0;
     private AssetBundle _assetBundle;
-    private Action<Sprite> onBackgroundLoaded;
-    
+    private Action<Sprite> _onBackgroundLoaded;
+
 
     private static BundleLoader _instance;
-    public static BundleLoader Instance
+    public static BundleLoader Instance { get { return _instance; } }
+
+    private void Awake()
     {
-        get
+        if (_instance != null && _instance != this)
         {
-            if (_instance == null)
-            {
-                _instance = new GameObject().AddComponent<BundleLoader>();
-                DontDestroyOnLoad(_instance);
-            }
-            return _instance;
+            Destroy(this.gameObject);
+        } else {
+            _instance = this;
         }
+        DontDestroyOnLoad(_instance);
     }
 
     public void Download(int level, Action<Sprite> callback)
     {
-        onBackgroundLoaded = callback;
+        _onBackgroundLoaded = callback;
         StartCoroutine(DownloadAndCache(level));
     }
 
@@ -58,7 +58,7 @@ public class BundleLoader : MonoBehaviour
         AssetBundleRequest spriteRequest;
         spriteRequest = _assetBundle.LoadAssetAsync($"bg_{level}", typeof(Sprite));
         yield return spriteRequest;
-        onBackgroundLoaded?.Invoke(spriteRequest.asset as Sprite);
-        onBackgroundLoaded = null;
+        _onBackgroundLoaded?.Invoke(spriteRequest.asset as Sprite);
+        _onBackgroundLoaded = null;
     }
 }

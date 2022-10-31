@@ -23,24 +23,25 @@ public class Circle : MonoBehaviour
     public void SetSize(float scale)
     {
         _scale = scale;
-        Vector3 newScale = new Vector3(scale, scale, 0.2f);
-        this.transform.localScale = newScale;
+        var newScale = new Vector3(scale, scale, 0.2f);
+        transform.localScale = newScale;
     }
 
     public void SetSprite(Sprite sprite) => _spriteRenderer.sprite = sprite;
 
     public void SetSpeed(float speed) => _speed = speed;
 
-    public void SetTransofrmPosition(Vector2 screenBounds)
+    public void SetTransformPosition(Vector2 screenBounds)
     {
-        float width = _spriteRenderer.bounds.size.x / 2;
-        float height = _spriteRenderer.bounds.size.y / 2;
+        var bounds = _spriteRenderer.bounds;
+        var width = bounds.size.x / 2;
+        var height = bounds.size.y / 2;
 
-        Vector3 pos = this.transform.position;
+        var pos = this.transform.position;
         pos.x = UnityEngine.Random.Range(-screenBounds.x + width, screenBounds.x - width);
         pos.y = screenBounds.y + height;
 
-        this.transform.position = pos;
+        transform.position = pos;
         onMove?.Invoke(this, height);
     }
 
@@ -49,5 +50,15 @@ public class Circle : MonoBehaviour
         onMove = null;
         onClicked = null;
         Destroy(this.gameObject);
+    }
+
+    public void GetFromPool()
+    {
+        this.gameObject.SetActive(true);
+    }
+
+    public void ReturnToPool()
+    {
+        this.gameObject.SetActive(false);
     }
 }

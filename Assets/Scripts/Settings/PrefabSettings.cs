@@ -5,26 +5,24 @@ using System.Collections.Generic;
 [CreateAssetMenu(fileName = "PrefabSettings", menuName = "circle-fall/PrefabSettings", order = 0)]
 public class PrefabSettings : ScriptableObject
 {
-
     [SerializeField]
     private List<GamePrefabs> _prefabList;
     [SerializeField]
-    private List<FigureTexureSize> _figureSize;
-
-    public GameObject GetFigurePrefab(Figures type)
+    private List<FigureTextureSize> _figureSize;
+    
+    public T GetFigurePrefab<T>(Figures type)
     {
-        return _prefabList.Find(prefab => prefab.type == type).prefab;
+        return _prefabList.Find(prefab => prefab.type == type).prefab.GetComponent<T>();
     }
 
     public TextureSize GetFigureTextureSize(float coef)
     {
-        TextureSize size = TextureSize.SMALL;
-        for (int i = 0; i < _figureSize.Count; i++)
+        var size = TextureSize.SMALL;
+        foreach (var textureSize in _figureSize)
         {
-            if(coef <= _figureSize[i].scale) {
-                size = _figureSize[i].size;
-                break;
-            }
+            if (!(coef <= textureSize.scale)) continue;
+            size = textureSize.size;
+            break;
         }
         return size;
     }
@@ -37,7 +35,7 @@ public class PrefabSettings : ScriptableObject
     }
 
     [Serializable]
-    public class FigureTexureSize
+    public class FigureTextureSize
     {
         public TextureSize size;
         public float scale;
