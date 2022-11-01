@@ -58,13 +58,13 @@ public class LevelUIController : MonoBehaviour
 
     private void StartLevelAnimation()
     {
-        _levelNumberText.text = $"Level {_levelInfo.levelNumber}";
-        _animator.SetTrigger("StartAnimation");
+        _levelNumberText.text = $"{Localization.Instance.GetKey("tf_level")} {_levelInfo.levelNumber}";
+        _animator.SetTrigger(Config.StartAnimationTrigger);
     }
 
     private void EndLevelAnimation()
     {
-        _animator.SetTrigger("EndAnimation");
+        _animator.SetTrigger(Config.EndAnimationTrigger);
         if (_isCompleted)
         {
             onEndAnimationComplete?.Invoke();
@@ -121,7 +121,7 @@ public class LevelUIController : MonoBehaviour
 
     public void UpdateScore(float circleScale, float maxScale)
     {
-        int result = (int)(maxScale / circleScale * _levelInfo.pointsForClick);
+        var result = (int)(maxScale / circleScale * _levelInfo.pointsForClick);
 
         _score += result;
         _scoreText.text = _score.ToString();
@@ -139,8 +139,8 @@ public class LevelUIController : MonoBehaviour
     {
         StopGame();
         _isCompleted = true;
-        _levelNumberText.text = "Thanks for playing";
-        _animator.SetTrigger("StartAnimation");
+        _levelNumberText.text = Localization.Instance.GetKey("tf_endgame");
+        _animator.SetTrigger(Config.StartAnimationTrigger);
     }
 
     private void OnDestroy()

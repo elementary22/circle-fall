@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static LevelSettings;
@@ -13,7 +12,6 @@ public class LevelController : MonoBehaviour
     
     private LevelInfo _levelInfo;
     private int _gameLevel;
-    private const int MaxLevel = 3;
 
     public Action onGameComplete;
 
@@ -37,7 +35,7 @@ public class LevelController : MonoBehaviour
 
     private void CheckLevelData()
     {
-        _gameLevel = PlayerPrefs.GetInt("level", 1);
+        _gameLevel = PlayerPrefs.GetInt(Config.PrefsLevelKey, 1);
     }
 
     private void PlayGame()
@@ -52,7 +50,7 @@ public class LevelController : MonoBehaviour
 
     private void CompleteLevel()
     {
-        if (_gameLevel == MaxLevel)
+        if (_gameLevel == Config.MaxLevel)
         {
             CompleteGame();
             return;
@@ -76,8 +74,8 @@ public class LevelController : MonoBehaviour
 
     private void SaveAndLoadLevel()
     {
-        PlayerPrefs.SetInt("level", _gameLevel);
-        SceneManager.LoadScene("game");
+        PlayerPrefs.SetInt(Config.PrefsLevelKey, _gameLevel);
+        SceneManager.LoadScene(Config.GameScene);
     }
 
     private void ScorePoints(float circleScale, float maxScale)

@@ -117,18 +117,18 @@ public class FigureSpawner : MonoBehaviour
             return;
 
         var tween = figure.transform.DOScale(new Vector3(0f, 0f, 0f), ScaleDuration);
-        tween.onComplete = () =>
-        {
-            _tweens[figure.Id].Kill();
-            onFigureClick?.Invoke(figure.Scale, _maxCircleScale);
-            ReleaseFigure(figure);
-        };
+        tween.onComplete = () => OnCompleteMove(figure, tween);
+    }
+
+    private void OnCompleteMove(Figure figure, Tween tween)
+    {
+        _tweens[figure.Id].Kill();
+        onFigureClick?.Invoke(figure.Scale, _maxCircleScale);
+        ReleaseFigure(figure);
+        tween.onComplete = null;
     }
     
-    public void StartSpawn()
-    {
-        StartCoroutine(SpawnFigures());
-    }
+    public void StartSpawn() => StartCoroutine(SpawnFigures());
 
     public void StopSpawn()
     {
@@ -142,7 +142,7 @@ public class FigureSpawner : MonoBehaviour
     {
         var startPosition = figure.transform.position;
         var finishPosition = new Vector3(startPosition.x, -_screenBounds.y - height, startPosition.z);
-        var tween = figure.transform.DOMove(finishPosition, figure.Speed * 10).SetSpeedBased().SetEase(Ease.Linear);
+        var tween = figure.transform.DOMove(finishPosition, figure.Speed).SetSpeedBased().SetEase(Ease.Linear);
         tween.onComplete = () => ReleaseFigure(figure);
         _tweens.Add(figure.Id, tween);
     }
