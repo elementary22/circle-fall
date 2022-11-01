@@ -6,27 +6,20 @@ using static LevelSettings;
 
 public class LevelUIController : MonoBehaviour
 {
-    [SerializeField]
-    private Animator _animator;
-    [SerializeField]
-    private AnimatorListener _animatorListener;
-    [SerializeField]
-    private SpriteRenderer _background;
-    [SerializeField]
-    private TextMeshProUGUI _levelNumberText;
-    [SerializeField]
-    private TextMeshProUGUI _scoreText;
-    [SerializeField]
-    private TextMeshProUGUI _timerText;
-    [SerializeField]
-    private Button _playButton;
-    [SerializeField]
-    private Button _closeButton;
+    [SerializeField] private Animator _animator;
+    [SerializeField] private AnimatorListener _animatorListener;
+    [SerializeField] private SpriteRenderer _background;
+    [SerializeField] private TextMeshProUGUI _levelNumberText;
+    [SerializeField] private TextMeshProUGUI _scoreText;
+    [SerializeField] private TextMeshProUGUI _timerText;
+    [SerializeField] private Button _playButton;
+    [SerializeField] private Button _closeButton;
+    
     private LevelInfo _levelInfo;
     private Timer _timer;
     private int _score;
     private Coroutine _timerRoutine;
-    private bool isCompleted;
+    private bool _isCompleted;
 
     public Action onPlay;
     public Action onClose;
@@ -37,8 +30,7 @@ public class LevelUIController : MonoBehaviour
     {
         _levelInfo = info;
         _timer = new Timer();
-
-
+        
         _playButton.onClick.AddListener(StartLevelAnimation);
         _closeButton.onClick.AddListener(OnClose);
         _timer.onChangeTimer += UpdateTimer;
@@ -73,7 +65,7 @@ public class LevelUIController : MonoBehaviour
     private void EndLevelAnimation()
     {
         _animator.SetTrigger("EndAnimation");
-        if (isCompleted)
+        if (_isCompleted)
         {
             onEndAnimationComplete?.Invoke();
             return;
@@ -146,7 +138,7 @@ public class LevelUIController : MonoBehaviour
     public void CompleteGame()
     {
         StopGame();
-        isCompleted = true;
+        _isCompleted = true;
         _levelNumberText.text = "Thanks for playing";
         _animator.SetTrigger("StartAnimation");
     }

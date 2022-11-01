@@ -4,8 +4,7 @@ using Random = UnityEngine.Random;
 
 public class Figure : MonoBehaviour, iPoolable
 {
-    [SerializeField]
-    protected SpriteRenderer _spriteRenderer;
+    [SerializeField] protected SpriteRenderer _spriteRenderer;
     public float Speed { get; set; }
     public int Id { get; set; }
     public float Scale { get; set; }
@@ -21,48 +20,40 @@ public class Figure : MonoBehaviour, iPoolable
         SetTransformPosition(screenBounds);
         onMove?.Invoke(this, _spriteRenderer.bounds.size.y / 2);
     }
-    
-    public Figure GetFigureType()
-    {
-        return this;
-    }
-    
+
     protected void OnMouseDown()
     {
         onClicked?.Invoke(this);
     }
 
-    public void SetSize(float scale)
+    private void SetSize(float scale)
     {
         Scale = scale;
         var newScale = new Vector3(scale, scale, 0.2f);
         transform.localScale = newScale;
     }
 
-    public void SetColor()
+    private void SetColor()
     {
         _spriteRenderer.color = Random.ColorHSV();
     }
 
-    public void SetSpeed(float speed) => Speed = speed;
+    private void SetSpeed(float speed)
+    {
+        Speed = speed;
+    }
 
-    public void SetTransformPosition(Vector2 screenBounds)
+    private void SetTransformPosition(Vector2 screenBounds)
     {
         var bounds = _spriteRenderer.bounds;
-        var width = bounds.size.x / 2;
-        var height = bounds.size.y / 2;
+        var width = bounds.size.x * 0.5f;
+        var height = bounds.size.y * 0.5f;
+        var pos = transform.position;
 
-        var pos = this.transform.position;
-        pos.x = UnityEngine.Random.Range(-screenBounds.x + width, screenBounds.x - width);
+        pos.x = Random.Range(-screenBounds.x + width, screenBounds.x - width);
         pos.y = screenBounds.y + height;
 
         transform.position = pos;
-    }
-
-    public void Dispose()
-    {
-        onMove = null;
-        onClicked = null;
     }
 
     public void GetFromPool()
@@ -72,13 +63,19 @@ public class Figure : MonoBehaviour, iPoolable
 
     public void ReturnToPool()
     {
+        Dispose();
         gameObject.SetActive(false);
     }
 
     public void DestroyPoolObject()
     {
+        Dispose();
+        Destroy(gameObject);
+    }
+
+    public void Dispose()
+    {
         onMove = null;
         onClicked = null;
-        Destroy(this.gameObject);
     }
 }

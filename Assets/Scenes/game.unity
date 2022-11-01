@@ -328,7 +328,7 @@ GameObject:
   - component: {fileID: 416122712}
   - component: {fileID: 416122711}
   m_Layer: 0
-  m_Name: LevelView
+  m_Name: FigureSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -346,7 +346,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19e238a2aee95e74a918e16f36319582, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _circleContainer: {fileID: 1248808513}
+  _mainCamera: {fileID: 519420031}
+  _figureContainer: {fileID: 1248808513}
   _minCircleScale: 0.5
 --- !u!4 &416122712
 Transform:
@@ -355,9 +356,9 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 416122710}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.000030517578, z: 0}
+  m_LocalScale: {x: 0.99999994, y: 0.99999994, z: 0.99999994}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1248808513}
@@ -1712,9 +1713,9 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1801088926}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.000030517578, z: 0}
+  m_LocalScale: {x: 0.99999994, y: 0.99999994, z: 0.99999994}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1734,5 +1735,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _prefabSettings: {fileID: 11400000, guid: bdaf0e2eae28f0d4b8c013aae8a05fe6, type: 2}
   _levelSettings: {fileID: 11400000, guid: 3dcb2f3378b6c4e4eb34a5a17f1f96ab, type: 2}
-  _levelView: {fileID: 416122711}
+  _figureSpawner: {fileID: 416122711}
   _levelUIController: {fileID: 429136912}

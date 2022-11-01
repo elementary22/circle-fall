@@ -16,18 +16,18 @@ MonoBehaviour:
   - levelNumber: 1
     scoreGoal: 2000
     pointsForClick: 50
-    levelSpeed: 0.85
+    levelSpeed: 1
     minTimeDelay: 1
     maxTimeDelay: 1.5
   - levelNumber: 2
     scoreGoal: 3000
     pointsForClick: 100
-    levelSpeed: 1
+    levelSpeed: 1.25
     minTimeDelay: 1
     maxTimeDelay: 1.25
   - levelNumber: 3
     scoreGoal: 4000
     pointsForClick: 150
-    levelSpeed: 1.25
+    levelSpeed: 1.5
     minTimeDelay: 0.65
     maxTimeDelay: 1

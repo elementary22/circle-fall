@@ -13,13 +13,13 @@ public class BundleLoader : MonoBehaviour
 #if UNITY_STANDALONE
     private string bundleURL = "https://firebasestorage.googleapis.com/v0/b/circle-fall.appspot.com/o/background?alt=media&token=47109473-a0b3-4917-9aef-6235acea3481";
 #endif
-    private int _version = 0;
+    private readonly int _version = 0;
     private AssetBundle _assetBundle;
     private Action<Sprite> _onBackgroundLoaded;
 
 
     private static BundleLoader _instance;
-    public static BundleLoader Instance { get { return _instance; } }
+    public static BundleLoader Instance => _instance;
 
     private void Awake()
     {
@@ -55,8 +55,7 @@ public class BundleLoader : MonoBehaviour
 
     private IEnumerator GetSprite(AssetBundle bundle, int level)
     {
-        AssetBundleRequest spriteRequest;
-        spriteRequest = _assetBundle.LoadAssetAsync($"bg_{level}", typeof(Sprite));
+        var spriteRequest = _assetBundle.LoadAssetAsync($"bg_{level}", typeof(Sprite));
         yield return spriteRequest;
         _onBackgroundLoaded?.Invoke(spriteRequest.asset as Sprite);
         _onBackgroundLoaded = null;
