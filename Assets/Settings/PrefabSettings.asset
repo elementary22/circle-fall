@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d18c2988b0a58734a85a2d2702ab7383, type: 3}
   m_Name: PrefabSettings
   m_EditorClassIdentifier: 
-  _prefabList:
-  - type: 0
-    prefab: {fileID: 2904602786029227248, guid: 6a589613e0b802c49be876a158c66b85, type: 3}
+  _figuresPrefabs:
+  - {fileID: 2904602786029227252, guid: 6a589613e0b802c49be876a158c66b85, type: 3}
+  - {fileID: 2641157453014034772, guid: f6b806f77174dd043a832e04ce8ff113, type: 3}
+  - {fileID: -2306743612228341776, guid: 3f26af847ae6a4143ae60a15379e05f3, type: 3}
   _figureSize:
   - size: 32
     scale: 0.25

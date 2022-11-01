@@ -15,9 +15,8 @@ public class LevelController : MonoBehaviour
     private LevelView _levelView;
     [SerializeField]
     private LevelUIController _levelUIController;
-    private int _gameLevel;
     private LevelInfo _levelInfo;
-    private TextureGenerator _textureGenerator;
+    private int _gameLevel;
     private int _maxLevel = 3;
 
     public Action onGameComplete;
@@ -25,25 +24,18 @@ public class LevelController : MonoBehaviour
     private void Start()
     {
         CheckLevelData();
-
-        _textureGenerator = new TextureGenerator();
+        
         _levelInfo = _levelSettings.GetLevelInfo(_gameLevel);
         _levelUIController.Init(_levelInfo);
-
+        _levelView.Init(_prefabSettings, _levelInfo.levelSpeed);
+        
         _levelUIController.onPlay += PlayGame;
         _levelUIController.onClose += StopGame;
         _levelUIController.onLevelCompleted += CompleteLevel;
         _levelUIController.onEndAnimationComplete += SaveAndLoadLevel;
-        _levelView.onCircleClick += ScorePoints;
+        _levelView.onFigureClick += ScorePoints;
 
         onGameComplete += _levelUIController.CompleteGame;
-
-        _textureGenerator.StartGeneration(OnGenerateSprite);
-    }
-
-    private void OnGenerateSprite(Dictionary<TextureSize, Sprite> dictionary)
-    {
-        _levelView.Init(_prefabSettings, dictionary, _levelInfo.levelSpeed);
     }
 
     private void CheckLevelData()
@@ -74,14 +66,12 @@ public class LevelController : MonoBehaviour
             return;
         }
         _gameLevel++;
-        _textureGenerator.DeleteTextures();
         SaveAndLoadLevel();
     }
 
     private void CompleteGame()
     {
         ResetLevel();
-        _textureGenerator.DeleteTextures();
         onGameComplete?.Invoke();
     }
 
@@ -103,7 +93,7 @@ public class LevelController : MonoBehaviour
 
     private IEnumerator SpawnCircles()
     {
-        _levelView.SpawnCircle();
+        _levelView.SpawnFigure();
         yield return null;
         StartCoroutine(SetSpawnDelay());
     }
@@ -120,7 +110,7 @@ public class LevelController : MonoBehaviour
         _levelUIController.onPlay -= PlayGame;
         _levelUIController.onClose -= StopGame;
         _levelUIController.onLevelCompleted -= CompleteLevel;
-        _levelView.onCircleClick -= ScorePoints;
+        _levelView.onFigureClick -= ScorePoints;
         onGameComplete -= _levelUIController.CompleteGame;
         _levelUIController.onEndAnimationComplete -= SaveAndLoadLevel;
     }

@@ -7,62 +7,80 @@ using Object = UnityEngine.Object;
 
 public class LevelView : MonoBehaviour
 {
-    [SerializeField] private Transform _circleContainer;
+    [SerializeField] private Transform _figureContainer;
     [SerializeField] private float _minCircleScale;
     private PrefabSettings _prefabSettings;
     private float _maxCircleScale;
     private Vector2 _screenBounds;
     private Dictionary<int, Coroutine> _routines;
-    private Dictionary<TextureSize, Sprite> _sprites;
     private int _id = 0;
     private float _levelSpeed;
-    private ObjectPool<Circle> _pool;
+    private Pool _pool;
+    private List<Figure> _figuresList;
+    private Dictionary<string, ObjectPool<Figure>> _objectPools;
 
-    public Action<float, float> onCircleClick;
+    public Action<float, float> onFigureClick;
 
-    public void Init(PrefabSettings prefabSettings, Dictionary<TextureSize, Sprite> sprites, float speed)
+    public void Init(PrefabSettings prefabSettings, float speed)
     {
         _prefabSettings = prefabSettings;
-        _screenBounds = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Camera.main.transform.position.z));
+        _screenBounds =
+            Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Camera.main.transform.position.z));
         _levelSpeed = speed;
         _maxCircleScale = GetMaxScale();
-
-        _sprites = sprites;
+        _figuresList = _prefabSettings.GetFigures();
         _routines = new Dictionary<int, Coroutine>();
-        _pool = new ObjectPool<Circle>(CreateCircle, circle => circle.GetFromPool(), circle => circle.ReturnToPool(),
-        circle => circle.DestroyPoolObject(), false, 5, 10);
+        _pool = new Pool(_prefabSettings, _figureContainer);
+        CreateFigurePools();
     }
-    
-    private Circle CreateCircle()
+
+    private void CreateFigurePools()
     {
-        var circle = Instantiate(_prefabSettings.GetFigurePrefab<Circle>(Figures.CIRCLE), _circleContainer, false);
-        circle.onMove += MoveCircle;
-        circle.onClicked += OnCircleClicked;
-        return circle;
+        _objectPools = new Dictionary<string, ObjectPool<Figure>>();
+        foreach (var figure in _figuresList)
+        {
+            var figureType = figure.GetType().Name;
+            var pool = _pool.GetObjectPool(figure);
+            _objectPools.Add(figureType, pool);
+        }
     }
-    
-    public void SpawnCircle()
+
+    public void SpawnFigure()
     {
         var scale = UnityEngine.Random.Range(_minCircleScale, _maxCircleScale);
-        var circle = _pool.Get();
+        var figure = GetFigure();
 
-        circle.Id = _id;
-        circle.SetSize(scale);
-        circle.SetSprite(GetSprite(scale));
-        circle.SetSpeed(GetCircleSpeed(scale));
-        circle.SetTransformPosition(_screenBounds);
+        figure.onMove += MoveFigure;
+        figure.onClicked += OnFigureClicked;
 
-        _id++;
+        figure.Init(scale, GetFigureSpeed(scale), _screenBounds);
     }
 
-    private void OnCircleClicked(Circle circle)
+    private Figure GetFigure()
     {
-        if (_routines[circle.Id] == null)
+        var figureType = _figuresList[UnityEngine.Random.Range(0, _figuresList.Count)];
+        var pool = _objectPools[figureType.GetType().Name];
+        var figure = pool.Get();
+        figure.Id = _id;
+        _id++;
+        return figure;
+    }
+
+    private void ReleaseFigure(Figure figure)
+    {
+        var pool = _objectPools[figure.GetType().Name];
+        pool.Release(figure);
+        figure.Dispose();
+    }
+
+    private void OnFigureClicked(Figure figure)
+    {
+        if (_routines[figure.Id] == null)
             return;
 
-        onCircleClick?.Invoke(circle.Scale, _maxCircleScale);
-        StopCoroutine(_routines[circle.Id]);
-        _pool.Release(circle);
+        onFigureClick?.Invoke(figure.Scale, _maxCircleScale);
+        StopCoroutine(_routines[figure.Id]);
+        ReleaseFigure(figure);
     }
 
     private float GetMaxScale()
@@ -76,47 +94,38 @@ public class LevelView : MonoBehaviour
         return maxScale;
     }
 
-    private float GetCircleSpeed(float scale)
+    private float GetFigureSpeed(float scale)
     {
         var speed = _levelSpeed / scale;
         return speed;
     }
 
-    private Sprite GetSprite(float scale)
-    {
-        var coef = scale / _maxCircleScale;
-        var size = _prefabSettings.GetFigureTextureSize(coef);
-        var sprite = _sprites[size];
-        return sprite;
-    }
-
     public void StopGame()
     {
         StopAllCoroutines();
-        
-        _pool.Clear();
+        foreach (var pool in _objectPools)
+            pool.Value.Clear();
     }
 
-    private void MoveCircle(Circle circle, float height) 
+    private void MoveFigure(Figure figure, float height)
     {
-        var startPosition = circle.transform.position;
+        var startPosition = figure.transform.position;
         var finishPosition = new Vector3(startPosition.x, -_screenBounds.y - height, startPosition.z);
-        var routine = StartCoroutine(Move(circle, startPosition, finishPosition, circle.Speed));
-        
-        _routines.Add(circle.Id, routine);
+        var routine = StartCoroutine(Move(figure, startPosition, finishPosition, figure.Speed));
+
+        _routines.Add(figure.Id, routine);
     }
 
-    private IEnumerator Move(Circle circle, Vector3 startPoint, Vector3 finishPoint, float speed)
+    private IEnumerator Move(Figure figure, Vector3 startPoint, Vector3 finishPoint, float speed)
     {
         float step = 0;
         while (step < 1)
         {
-            circle.transform.position = Vector3.Lerp(startPoint, finishPoint, step);
+            figure.transform.position = Vector3.Lerp(startPoint, finishPoint, step);
             step += speed * Time.deltaTime;
             yield return null;
         }
-
-        circle.transform.position = finishPoint;
-        _pool.Release(circle);
+        figure.transform.position = finishPoint;
+        ReleaseFigure(figure);
     }
 }
