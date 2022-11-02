@@ -12,8 +12,8 @@ public class LevelController : MonoBehaviour
     
     private LevelInfo _levelInfo;
     private int _gameLevel;
-
-    public Action onGameComplete;
+    
+    private Action onGameComplete;
 
     private void Start()
     {
@@ -22,10 +22,10 @@ public class LevelController : MonoBehaviour
         _levelInfo = _levelSettings.GetLevelInfo(_gameLevel);
 
         _levelUIController.Init(_levelInfo);
-        _levelUIController.onPlay += PlayGame;
-        _levelUIController.onClose += StopGame;
-        _levelUIController.onLevelCompleted += CompleteLevel;
-        _levelUIController.onEndAnimationComplete += SaveAndLoadLevel;
+        _levelUIController.OnPlayGame += PlayGame;
+        _levelUIController.OnCloseGame += StopGame;
+        _levelUIController.OnLevelCompleted += CompleteLevel;
+        _levelUIController.OnAnimationComplete += SaveAndLoadLevel;
         
         _figureSpawner.Init(_prefabSettings, _levelInfo);
         _figureSpawner.onFigureClick += ScorePoints;
@@ -85,11 +85,11 @@ public class LevelController : MonoBehaviour
 
     private void OnDestroy()
     {
-        _levelUIController.onPlay -= PlayGame;
-        _levelUIController.onClose -= StopGame;
-        _levelUIController.onLevelCompleted -= CompleteLevel;
+        _levelUIController.OnPlayGame -= PlayGame;
+        _levelUIController.OnCloseGame -= StopGame;
+        _levelUIController.OnLevelCompleted -= CompleteLevel;
         _figureSpawner.onFigureClick -= ScorePoints;
         onGameComplete -= _levelUIController.CompleteGame;
-        _levelUIController.onEndAnimationComplete -= SaveAndLoadLevel;
+        _levelUIController.OnAnimationComplete -= SaveAndLoadLevel;
     }
 }
