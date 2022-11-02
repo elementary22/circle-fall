@@ -23,10 +23,10 @@ public class LevelUIController : MonoBehaviour
     private Tween _scoreTween;
     private CancellationTokenSource _cts;
 
-    public Action onPlay;
-    public Action onClose;
-    public Action onLevelCompleted;
-    public Action onEndAnimationComplete;
+    public Action OnPlayGame;
+    public Action OnCloseGame;
+    public Action OnLevelCompleted;
+    public Action OnAnimationComplete;
 
     public void Init(LevelInfo info)
     {
@@ -66,8 +66,8 @@ public class LevelUIController : MonoBehaviour
     private void LevelTextAnimation()
     {
         var sequence = DOTween.Sequence();
-        sequence.Append(_levelNumberText.DOFade(1f, 0.75f)).SetEase(Ease.Linear);
-        sequence.Append(_levelNumberText.DOFade(0f, 0.75f)).SetEase(Ease.Linear);
+        sequence.Append(_levelNumberText.DOFade(1f, Config.ScaleDuration)).SetEase(Ease.Linear);
+        sequence.Append(_levelNumberText.DOFade(0f, Config.ScaleDuration)).SetEase(Ease.Linear);
         sequence.AppendCallback(EndLevel);
     }
     
@@ -75,7 +75,7 @@ public class LevelUIController : MonoBehaviour
     {
         if (_isCompleted)
         {
-            onEndAnimationComplete?.Invoke();
+            OnAnimationComplete?.Invoke();
             return;
         }
         OnPlay();
@@ -88,7 +88,7 @@ public class LevelUIController : MonoBehaviour
         _playButton.interactable = false;
         SetTimer();
         
-        onPlay?.Invoke();
+        OnPlayGame?.Invoke();
     }
     private void SetTimer()
     {
@@ -97,7 +97,7 @@ public class LevelUIController : MonoBehaviour
     private void OnClose()
     {
         StopGame();
-        onClose?.Invoke();
+        OnCloseGame?.Invoke();
     }
 
     private void StopGame()
@@ -133,7 +133,7 @@ public class LevelUIController : MonoBehaviour
         _scoreText.text = _score.ToString();
         _scoreTween.Kill();
         _scoreText.transform.localScale = Vector3.one;
-        _scoreTween = _scoreText.transform.DOPunchScale(new Vector3(0.5f, 0.5f, 0), 0.5f);
+        _scoreTween = _scoreText.transform.DOPunchScale(new Vector3(Config.ScoreScaleSize, Config.ScoreScaleSize, 0), Config.ScoreScaleDuration);
 
         CheckLevelCompleted();
     }
@@ -141,7 +141,7 @@ public class LevelUIController : MonoBehaviour
     private void CheckLevelCompleted()
     {
         if (_score >= _levelInfo.scoreGoal)
-            onLevelCompleted?.Invoke();
+            OnLevelCompleted?.Invoke();
     }
 
     public void CompleteGame()
