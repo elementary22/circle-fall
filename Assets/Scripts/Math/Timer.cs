@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System;
-using Cysharp.Threading.Tasks;
 
 public class Timer
 {
@@ -9,18 +9,17 @@ public class Timer
     private string _secondMinute;
     private string _firstSecond;
     private string _secondSecond;
-    private UniTaskVoid _task;
+    public bool isTicking = false;
 
     public Action<string> onChangeTimer;
 
     public void StartTimer()
     {
-        _task = StartTimerAsync();
+        isTicking = true;
     }
-
     public void StopTimer()
     {
-        _task.Forget();
+        isTicking = false;
         _timer = 0f;
     }
 
@@ -29,7 +28,7 @@ public class Timer
         float minutes = Mathf.FloorToInt(time / 60);
         float seconds = Mathf.FloorToInt(time % 60);
 
-        var currentTime = $"{minutes:00}{seconds:00}";
+        string currentTime = string.Format("{00:00}{1:00}", minutes, seconds);
 
         _firstMinute = currentTime[0].ToString();
         _secondMinute = currentTime[1].ToString();
@@ -37,14 +36,14 @@ public class Timer
         _secondSecond = currentTime[3].ToString();
         onChangeTimer?.Invoke($"{_firstMinute}{_secondMinute} : {_firstSecond}{_secondSecond}");
     }
-    
-    private async UniTaskVoid StartTimerAsync()
+
+    public IEnumerator StartTimerCo()
     {
-        while (true)
+        while (isTicking)
         {
+            _timer += Time.deltaTime;
             UpdateTimerDisplay(_timer);
-            await UniTask.Delay(TimeSpan.FromSeconds(1f));
-            _timer += 1;
+            yield return null;
         }
     }
 
