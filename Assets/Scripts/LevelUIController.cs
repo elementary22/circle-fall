@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -20,6 +21,7 @@ public class LevelUIController : MonoBehaviour
     private Coroutine _timerRoutine;
     private bool _isCompleted;
     private Tween _scoreTween;
+    private CancellationTokenSource _cts;
 
     public Action onPlay;
     public Action onClose;
@@ -39,9 +41,10 @@ public class LevelUIController : MonoBehaviour
         CheckLevel();
     }
 
-    private void GetLevelBackground()
+    private async void GetLevelBackground()
     {
-        BundleLoader.Instance.Download(_levelInfo.levelNumber, SetLevelBackground);
+        _cts = new CancellationTokenSource();
+        await BundleLoader.Instance.Download(_levelInfo.levelNumber, _cts, SetLevelBackground);
     }
 
     private void SetLevelBackground(Sprite bg)
@@ -90,7 +93,6 @@ public class LevelUIController : MonoBehaviour
     private void SetTimer()
     {
         _timer.StartTimer();
-        _timerRoutine = StartCoroutine(_timer.StartTimerCo());
     }
     private void OnClose()
     {
@@ -116,7 +118,6 @@ public class LevelUIController : MonoBehaviour
     private void StopTimer()
     {
         _timer.StopTimer();
-        StopCoroutine(_timerRoutine);
     }
 
     private void UpdateTimer(string time)

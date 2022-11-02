@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Pool;
 using DG.Tweening;
@@ -22,6 +24,7 @@ public class FigureSpawner : MonoBehaviour
     private Vector2 _screenBounds;
     private int _id = 0;
     private float _levelSpeed;
+    private CancellationTokenSource _cts;
 
     private const float ScaleDuration = 0.25f;
     private const float SpeedCoefficient = 10f;
@@ -127,15 +130,18 @@ public class FigureSpawner : MonoBehaviour
         ReleaseFigure(figure);
         tween.onComplete = null;
     }
-    
-    public void StartSpawn() => StartCoroutine(SpawnFigures());
 
+    public void StartSpawn()
+    {
+        _cts = new CancellationTokenSource();
+        SpawnFigures();
+    }
+    private UniTask _task;
     public void StopSpawn()
     {
-        StopAllCoroutines();
+        _cts.Cancel();
+        _task.Forget();
         DOTween.KillAll();
-        foreach (Transform figure in _figureContainer)
-            Destroy(figure.gameObject);
     }
 
     private void MoveFigure(Figure figure, float height)
@@ -146,18 +152,18 @@ public class FigureSpawner : MonoBehaviour
         tween.onComplete = () => ReleaseFigure(figure);
         _tweens.Add(figure.Id, tween);
     }
-
-    private IEnumerator SpawnFigures()
+    
+    private void SpawnFigures()
     {
         CreateFigure();
-        yield return null;
-        StartCoroutine(SetSpawnDelay());
+        _task = SetSpawnDelay();
     }
 
-    private IEnumerator SetSpawnDelay()
+    private async UniTask SetSpawnDelay()
     {
         var randomDelayTime = UnityEngine.Random.Range(_levelInfo.minTimeDelay, _levelInfo.maxTimeDelay);
-        yield return new WaitForSeconds(randomDelayTime);
-        StartCoroutine(SpawnFigures());
+        await UniTask.Delay(TimeSpan.FromSeconds(randomDelayTime), false, PlayerLoopTiming.Update, _cts.Token);
+        if(_cts.Token.IsCancellationRequested) return;
+        SpawnFigures();
     }
 }

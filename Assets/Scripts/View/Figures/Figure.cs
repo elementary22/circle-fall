@@ -73,7 +73,7 @@ public class Figure : MonoBehaviour, iPoolable
         Destroy(gameObject);
     }
 
-    public void Dispose()
+    private void Dispose()
     {
         onMove = null;
         onClicked = null;
