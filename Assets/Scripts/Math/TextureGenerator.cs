@@ -47,6 +47,7 @@ public class TextureGenerator
             float rectOffset = _atlas.width * rect.xMin;
             int size = (int)(_atlas.width * rect.xMax - rectOffset);
             Sprite sprite = Sprite.Create(_atlas, new Rect(rectOffset, 0, size, size), new Vector2(0.5f, 0.5f), size, 0, SpriteMeshType.FullRect);
+
             sprites.Add((TextureSize)size, sprite);
         }
         onGenerate?.Invoke(sprites);

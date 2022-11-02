@@ -8,11 +8,15 @@ public class LevelSettings : ScriptableObject
     [SerializeField]
     private List<LevelInfo> _levelInfo;
 
+
+
     public LevelInfo GetLevelInfo(int level)
     {
         return _levelInfo.Find(info => info.levelNumber == level);
     }
-    
+
+
+
     [Serializable]
     public class LevelInfo
     {
