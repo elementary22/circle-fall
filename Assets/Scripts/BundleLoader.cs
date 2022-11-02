@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class BundleLoader : MonoBehaviour
@@ -13,52 +15,53 @@ public class BundleLoader : MonoBehaviour
 #if UNITY_STANDALONE
     private string bundleURL = "https://firebasestorage.googleapis.com/v0/b/circle-fall.appspot.com/o/background?alt=media&token=47109473-a0b3-4917-9aef-6235acea3481";
 #endif
-    private int _version = 0;
+    private const int Version = 0;
     private AssetBundle _assetBundle;
-    private Action<Sprite> onBackgroundLoaded;
-    
+    private Action<Sprite> _onBackgroundLoaded;
 
     private static BundleLoader _instance;
-    public static BundleLoader Instance
+    public static BundleLoader Instance => _instance;
+
+    private void Awake()
     {
-        get
+        if (_instance != null && _instance != this)
         {
-            if (_instance == null)
-            {
-                _instance = new GameObject().AddComponent<BundleLoader>();
-                DontDestroyOnLoad(_instance);
-            }
-            return _instance;
+            Destroy(this.gameObject);
+        } else {
+            _instance = this;
         }
+        DontDestroyOnLoad(_instance);
     }
 
-    public void Download(int level, Action<Sprite> callback)
+    public async UniTask Download(int level, CancellationTokenSource cts, Action<Sprite> callback)
     {
-        onBackgroundLoaded = callback;
-        StartCoroutine(DownloadAndCache(level));
+        _onBackgroundLoaded = callback;
+        if(cts.Token.IsCancellationRequested) return;
+        await DownloadAndCache(level, cts);
     }
 
-    private IEnumerator DownloadAndCache(int level)
+    private async UniTask DownloadAndCache(int level, CancellationTokenSource cts)
     {
         if (_assetBundle != null)
         {
-            yield return GetSprite(_assetBundle, level);
-            yield break;
+            await GetSprite(level, cts);
+            cts.Cancel();
         }
-
-        WWW www = WWW.LoadFromCacheOrDownload(bundleURL, _version);
-        yield return www;
+        if(cts.IsCancellationRequested) return;
+        
+        var www = WWW.LoadFromCacheOrDownload(bundleURL, Version);
+        await www;
 
         _assetBundle = www.assetBundle;
-        yield return GetSprite(_assetBundle, level);
+         await GetSprite(level, cts);
     }
 
-    private IEnumerator GetSprite(AssetBundle bundle, int level)
+    private async UniTask GetSprite(int level, CancellationTokenSource cts)
     {
-        AssetBundleRequest spriteRequest;
-        spriteRequest = _assetBundle.LoadAssetAsync($"bg_{level}", typeof(Sprite));
-        yield return spriteRequest;
-        onBackgroundLoaded?.Invoke(spriteRequest.asset as Sprite);
-        onBackgroundLoaded = null;
+        if(cts.IsCancellationRequested) return;
+        var spriteRequest = _assetBundle.LoadAssetAsync($"bg_{level}", typeof(Sprite));
+        await spriteRequest;
+        _onBackgroundLoaded?.Invoke(spriteRequest.asset as Sprite);
+        _onBackgroundLoaded = null;
     }
 }
