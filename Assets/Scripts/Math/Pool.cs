@@ -13,7 +13,7 @@ public class Pool
     public ObjectPool<Figure> GetObjectPool(Figure figure)
     {
         return new ObjectPool<Figure>(() => Object.Instantiate(figure, _container, false),
-            item => item.GetFromPool(), item => item.ReturnToPool(), item => figure.DestroyPoolObject(),
+            item => item.GetFromPool(), item => item.ReturnToPool(), item => item.DestroyPoolObject(),
             false, 5, 10);
     }
 }

@@ -1,8 +1,3 @@
-
-public enum Figures
-{
-    CIRCLE
-}
 public enum TextureSize
 {
     SMALL = 32,

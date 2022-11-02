@@ -1,7 +1,7 @@
 public class Config
 {
-    public const string StartAnimationTrigger = "StartAnimation";
-    public const string EndAnimationTrigger = "EndAnimation";
+    public const string LocLevelKey = "tf_level";
+    public const string LocEndLevelKey = "tf_endgame";
     public const string PrefsLevelKey = "level";
     public const string GameScene = "Game";
 

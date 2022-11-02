@@ -61,7 +61,7 @@ public class FigureSpawner : MonoBehaviour
         }
     }
 
-    public void CreateFigure()
+    private void CreateFigure()
     {
         var scale = UnityEngine.Random.Range(_minCircleScale, _maxCircleScale);
         var figure = GetFigure();
@@ -117,10 +117,10 @@ public class FigureSpawner : MonoBehaviour
             return;
 
         var tween = figure.transform.DOScale(new Vector3(0f, 0f, 0f), ScaleDuration);
-        tween.onComplete = () => OnCompleteMove(figure, tween);
+        tween.onComplete += () => OnCompleteScale(figure, tween);
     }
 
-    private void OnCompleteMove(Figure figure, Tween tween)
+    private void OnCompleteScale(Figure figure, Tween tween)
     {
         _tweens[figure.Id].Kill();
         onFigureClick?.Invoke(figure.Scale, _maxCircleScale);

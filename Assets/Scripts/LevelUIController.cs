@@ -1,4 +1,5 @@
 using System;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,8 +7,6 @@ using static LevelSettings;
 
 public class LevelUIController : MonoBehaviour
 {
-    [SerializeField] private Animator _animator;
-    [SerializeField] private AnimatorListener _animatorListener;
     [SerializeField] private SpriteRenderer _background;
     [SerializeField] private TextMeshProUGUI _levelNumberText;
     [SerializeField] private TextMeshProUGUI _scoreText;
@@ -20,6 +19,7 @@ public class LevelUIController : MonoBehaviour
     private int _score;
     private Coroutine _timerRoutine;
     private bool _isCompleted;
+    private Tween _scoreTween;
 
     public Action onPlay;
     public Action onClose;
@@ -31,10 +31,9 @@ public class LevelUIController : MonoBehaviour
         _levelInfo = info;
         _timer = new Timer();
         
-        _playButton.onClick.AddListener(StartLevelAnimation);
+        _playButton.onClick.AddListener(StartLevel);
         _closeButton.onClick.AddListener(OnClose);
         _timer.onChangeTimer += UpdateTimer;
-        _animatorListener.onComplete += EndLevelAnimation;
 
         GetLevelBackground();
         CheckLevel();
@@ -53,18 +52,24 @@ public class LevelUIController : MonoBehaviour
     private void CheckLevel()
     {
         if (_levelInfo.levelNumber > 1)
-            StartLevelAnimation();
+            StartLevel();
+    }
+    private void StartLevel()
+    {
+        _levelNumberText.text = $"{Localization.Instance.GetKey($"{Config.LocLevelKey}")} {_levelInfo.levelNumber}";
+        LevelTextAnimation();
     }
 
-    private void StartLevelAnimation()
+    private void LevelTextAnimation()
     {
-        _levelNumberText.text = $"{Localization.Instance.GetKey("tf_level")} {_levelInfo.levelNumber}";
-        _animator.SetTrigger(Config.StartAnimationTrigger);
+        var sequence = DOTween.Sequence();
+        sequence.Append(_levelNumberText.DOFade(1f, 0.75f)).SetEase(Ease.Linear);
+        sequence.Append(_levelNumberText.DOFade(0f, 0.75f)).SetEase(Ease.Linear);
+        sequence.AppendCallback(EndLevel);
     }
-
-    private void EndLevelAnimation()
+    
+    private void EndLevel()
     {
-        _animator.SetTrigger(Config.EndAnimationTrigger);
         if (_isCompleted)
         {
             onEndAnimationComplete?.Invoke();
@@ -79,7 +84,7 @@ public class LevelUIController : MonoBehaviour
         _timerText.gameObject.SetActive(true);
         _playButton.interactable = false;
         SetTimer();
-
+        
         onPlay?.Invoke();
     }
     private void SetTimer()
@@ -93,7 +98,7 @@ public class LevelUIController : MonoBehaviour
         onClose?.Invoke();
     }
 
-    public void StopGame()
+    private void StopGame()
     {
         _scoreText.gameObject.SetActive(false);
         _timerText.gameObject.SetActive(false);
@@ -125,6 +130,9 @@ public class LevelUIController : MonoBehaviour
 
         _score += result;
         _scoreText.text = _score.ToString();
+        _scoreTween.Kill();
+        _scoreText.transform.localScale = Vector3.one;
+        _scoreTween = _scoreText.transform.DOPunchScale(new Vector3(0.5f, 0.5f, 0), 0.5f);
 
         CheckLevelCompleted();
     }
@@ -139,15 +147,14 @@ public class LevelUIController : MonoBehaviour
     {
         StopGame();
         _isCompleted = true;
-        _levelNumberText.text = Localization.Instance.GetKey("tf_endgame");
-        _animator.SetTrigger(Config.StartAnimationTrigger);
+        _levelNumberText.text = Localization.Instance.GetKey($"{Config.LocEndLevelKey}");
+        LevelTextAnimation();
     }
 
     private void OnDestroy()
     {
-        _playButton.onClick.RemoveListener(StartLevelAnimation);
+        _playButton.onClick.RemoveListener(StartLevel);
         _closeButton.onClick.RemoveListener(OnClose);
         _timer.onChangeTimer -= UpdateTimer;
-        _animatorListener.onComplete -= EndLevelAnimation;
     }
 }
