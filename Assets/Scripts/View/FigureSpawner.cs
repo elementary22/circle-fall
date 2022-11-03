@@ -141,7 +141,6 @@ public class FigureSpawner : MonoBehaviour
     {
         _cts.Cancel();
         _task.Forget();
-        DOTween.KillAll();
     }
 
     private void MoveFigure(Figure figure, float height)
@@ -149,7 +148,7 @@ public class FigureSpawner : MonoBehaviour
         var startPosition = figure.transform.position;
         var finishPosition = new Vector3(startPosition.x, -_screenBounds.y - height, startPosition.z);
         var tween = figure.transform.DOMove(finishPosition, figure.Speed).SetSpeedBased().SetEase(Ease.Linear);
-        tween.onComplete = () => ReleaseFigure(figure);
+        tween.OnComplete(() => ReleaseFigure(figure)).WithCancellation(_cts.Token);
         _tweens.Add(figure.Id, tween);
     }
     
@@ -163,7 +162,6 @@ public class FigureSpawner : MonoBehaviour
     {
         var randomDelayTime = UnityEngine.Random.Range(_levelInfo.minTimeDelay, _levelInfo.maxTimeDelay);
         await UniTask.Delay(TimeSpan.FromSeconds(randomDelayTime), false, PlayerLoopTiming.Update, _cts.Token);
-        if(_cts.Token.IsCancellationRequested) return;
         SpawnFigures();
     }
 }
