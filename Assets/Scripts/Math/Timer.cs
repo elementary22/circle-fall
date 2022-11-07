@@ -1,26 +1,28 @@
 ﻿using UnityEngine;
 using System;
 using Cysharp.Threading.Tasks;
+using Zenject;
 
-public class Timer
+public class Timer : ITickable
 {
     private float _timer;
     private string _firstMinute;
     private string _secondMinute;
     private string _firstSecond;
     private string _secondSecond;
-    private UniTaskVoid _task;
+    private bool isTicking;
 
     public Action<string> onChangeTimer;
 
     public void StartTimer()
     {
-        _task = StartTimerAsync();
+        isTicking = true;
+        StartTimerAsync().Forget();
     }
 
     public void StopTimer()
     {
-        _task.Forget();
+        isTicking = false;
         _timer = 0f;
     }
 
@@ -40,7 +42,7 @@ public class Timer
     
     private async UniTaskVoid StartTimerAsync()
     {
-        while (true)
+        while (isTicking)
         {
             UpdateTimerDisplay(_timer);
             await UniTask.Delay(TimeSpan.FromSeconds(1f));
@@ -48,4 +50,8 @@ public class Timer
         }
     }
 
+    public void Tick()
+    {
+        throw new NotImplementedException();
+    }
 }

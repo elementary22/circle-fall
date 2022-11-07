@@ -1,13 +1,14 @@
-using System;
 using System.Threading;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Zenject;
 using static LevelSettings;
 
-public class LevelUIController : MonoBehaviour
+public class LevelUIView : MonoBehaviour, IView
 {
+    [Inject] private readonly SignalBus _signalBus;
     [SerializeField] private SpriteRenderer _background;
     [SerializeField] private TextMeshProUGUI _levelNumberText;
     [SerializeField] private TextMeshProUGUI _scoreText;
@@ -19,14 +20,9 @@ public class LevelUIController : MonoBehaviour
     private Timer _timer;
     private int _score;
     private Coroutine _timerRoutine;
-    private bool _isCompleted;
     private Tween _scoreTween;
     private CancellationTokenSource _cts;
-
-    public Action OnPlayGame;
-    public Action OnCloseGame;
-    public Action OnLevelCompleted;
-    public Action OnAnimationComplete;
+    private bool _isCompleted;
 
     public void Init(LevelInfo info)
     {
@@ -38,10 +34,19 @@ public class LevelUIController : MonoBehaviour
         _timer.onChangeTimer += UpdateTimer;
 
         GetLevelBackground();
-        CheckLevel();
     }
 
-    private async void GetLevelBackground()
+    private void Start()
+    {
+        _signalBus.Fire(new OnViewEnableViewSignal(this));
+    }
+    // CHECK THIS 
+    private void OnApplicationQuit()
+    {
+        _signalBus.TryFire(new OnViewDisableViewSignal(this));
+    }
+
+    public async void GetLevelBackground()
     {
         _cts = new CancellationTokenSource();
         await BundleLoader.Instance.Download(_levelInfo.levelNumber, _cts, SetLevelBackground);
@@ -52,35 +57,34 @@ public class LevelUIController : MonoBehaviour
         _background.sprite = bg;
     }
 
-    private void CheckLevel()
-    {
-        if (_levelInfo.levelNumber > 1)
-            StartLevel();
-    }
     private void StartLevel()
     {
-        _levelNumberText.text = $"{Localization.Instance.GetKey($"{Config.LocLevelKey}")} {_levelInfo.levelNumber}";
-        LevelTextAnimation();
+        StartLevelAnimation();
     }
 
-    private void LevelTextAnimation()
+    public void StartLevelAnimation()
     {
+        var text = $"{Localization.Instance.GetKey($"{Config.LocLevelKey}")} {_levelInfo.levelNumber}";;
+        LevelAnimation(text);
+    }
+
+    private void LevelAnimation(string text)
+    {
+        _levelNumberText.text = text;
         var sequence = DOTween.Sequence();
         sequence.Append(_levelNumberText.DOFade(1f, Config.ScaleDuration)).SetEase(Ease.Linear);
         sequence.Append(_levelNumberText.DOFade(0f, Config.ScaleDuration)).SetEase(Ease.Linear);
-        sequence.AppendCallback(EndLevel);
-    }
-    
-    private void EndLevel()
-    {
-        if (_isCompleted)
-        {
-            OnAnimationComplete?.Invoke();
-            return;
-        }
-        OnPlay();
+        sequence.AppendCallback(OnAnimationComplete);
     }
 
+    private void OnAnimationComplete()
+    {
+        if (!_isCompleted)
+        {
+            OnPlay();
+        } else _signalBus.Fire<OnResetGameViewSignal>();
+    }
+    
     private void OnPlay()
     {
         _scoreText.gameObject.SetActive(true);
@@ -88,16 +92,18 @@ public class LevelUIController : MonoBehaviour
         _playButton.interactable = false;
         SetTimer();
         
-        OnPlayGame?.Invoke();
+        _signalBus.Fire<OnPlayViewSignal>();
     }
+    
     private void SetTimer()
     {
         _timer.StartTimer();
     }
+    
     private void OnClose()
     {
         StopGame();
-        OnCloseGame?.Invoke();
+        _signalBus.Fire<OnCloseViewSignal>();
     }
 
     private void StopGame()
@@ -125,6 +131,11 @@ public class LevelUIController : MonoBehaviour
         _timerText.text = time;
     }
 
+    public void UpdateLevelInfo(LevelInfo levelInfo)
+    {
+        _levelInfo = levelInfo;
+    }
+    
     public void UpdateScore(float circleScale, float maxScale)
     {
         var result = (int)(maxScale / circleScale * _levelInfo.pointsForClick);
@@ -141,15 +152,15 @@ public class LevelUIController : MonoBehaviour
     private void CheckLevelCompleted()
     {
         if (_score >= _levelInfo.scoreGoal)
-            OnLevelCompleted?.Invoke();
+            _signalBus.Fire<OnLevelCompleteViewSignal>();
     }
 
     public void CompleteGame()
     {
         StopGame();
         _isCompleted = true;
-        _levelNumberText.text = Localization.Instance.GetKey($"{Config.LocEndLevelKey}");
-        LevelTextAnimation();
+        var text = Localization.Instance.GetKey($"{Config.LocEndLevelKey}");
+        LevelAnimation(text);
     }
 
     private void OnDestroy()

@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Zenject;
 using Random = UnityEngine.Random;
 
 public class Figure : MonoBehaviour, iPoolable
@@ -77,5 +78,10 @@ public class Figure : MonoBehaviour, iPoolable
     {
         onMove = null;
         onClicked = null;
+    }
+
+    public class Factory : PlaceholderFactory<UnityEngine.Object, Figure>
+    {
+        
     }
 }

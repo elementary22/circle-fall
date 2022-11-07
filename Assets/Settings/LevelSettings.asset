@@ -20,13 +20,13 @@ MonoBehaviour:
     minTimeDelay: 1
     maxTimeDelay: 1.5
   - levelNumber: 2
-    scoreGoal: 3000
+    scoreGoal: 5000
     pointsForClick: 100
     levelSpeed: 1.25
     minTimeDelay: 1
     maxTimeDelay: 1.25
   - levelNumber: 3
-    scoreGoal: 4000
+    scoreGoal: 10000
     pointsForClick: 150
     levelSpeed: 1.5
     minTimeDelay: 0.65

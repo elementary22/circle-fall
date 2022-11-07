@@ -10,21 +10,7 @@ namespace Zenject.Asteroids
 
         public override void InstallBindings()
         {
-            // In this example there is only one 'installer' but in larger projects you
-            // will likely end up with many different re-usable installers
-            // that you'll want to use in several different scenes
-            //
-            // There are several ways to do this.  You can store your installer as a prefab,
-            // a scriptable object, a component within the scene, etc.  Or, if you don't
-            // need your installer to be a MonoBehaviour then you can just simply call
-            // Container.Install
-            //
-            // See here for more details:
-            // https://github.com/modesttree/zenject#installers
-            //
-            //Container.Install<MyOtherInstaller>();
 
-            // Install the main game
             InstallAsteroids();
             InstallShip();
             InstallMisc();
@@ -34,26 +20,9 @@ namespace Zenject.Asteroids
 
         void InstallAsteroids()
         {
-            // ITickable, IFixedTickable, IInitializable and IDisposable are special Zenject interfaces.
-            // Binding a class to any of these interfaces creates an instance of the class at startup.
-            // Binding to any of these interfaces is also necessary to have the method defined in that interface be
-            // called on the implementing class as follows:
-            // Binding to ITickable or IFixedTickable will result in Tick() or FixedTick() being called like Update() or FixedUpdate().
-            // Binding to IInitializable means that Initialize() will be called on startup during Unity's Start event.
-            // Binding to IDisposable means that Dispose() will be called when the app closes or the scene changes
 
-            // Any time you use To<Foo>().AsSingle, what that means is that the DiContainer will only ever instantiate
-            // one instance of the type given inside the To<> (in this example, Foo). So in this case, any classes that take ITickable,
-            // IFixedTickable, or AsteroidManager as inputs will receive the same instance of AsteroidManager.
-            // We create multiple bindings for ITickable, so any dependencies that reference this type must be lists of ITickable.
             Container.BindInterfacesAndSelfTo<AsteroidManager>().AsSingle();
 
-            // Note that the above binding is equivalent to the following:
-            //Container.Bind(typeof(ITickable), typeof(IFixedTickable), typeof(AsteroidManager)).To<AsteroidManager>.AsSingle();
-
-            // Here, we're defining a generic factory to create asteroid objects using the given prefab
-            // So any classes that want to create new asteroid objects can simply include an injected field
-            // or constructor parameter of type Asteroid.Factory, then call Create() on that
             Container.BindFactory<Asteroid, Asteroid.Factory>()
                 // This means that any time Asteroid.Factory.Create is called, it will instantiate
                 // this prefab and then search it for the Asteroid component
