@@ -1,6 +1,4 @@
-﻿
-using UnityEngine;
-using Zenject;
+﻿using UnityEngine;
 
 public class StopSpawnCommand : ICommand
 {
@@ -15,14 +13,14 @@ public class StopSpawnCommand : ICommand
     
     public void Execute()
     {
-        _figureSpawnerModel.SpawnerTokenSource.Cancel();
-
         foreach (Transform child in _container)
         {
             var figure = child.GetComponent<Figure>();
             var pool = _figureSpawnerModel.PoolsDictionary[figure.GetType().Name];
             pool.Release(figure);
         }
+        
+        _figureSpawnerModel.SpawnerTokenSource.Cancel();
     }
 }
 

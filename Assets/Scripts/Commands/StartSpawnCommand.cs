@@ -30,7 +30,6 @@ public class StartSpawnCommand : ICommand
     {
         _figureSpawnerModel.SpawnerTokenSource = new CancellationTokenSource();
         SpawnFigures();
-        Debug.Log("I SPAWN FIGURES");
     }
 
     private Vector2 GetScreenBounds(Camera camera)
@@ -50,7 +49,6 @@ public class StartSpawnCommand : ICommand
     {
         var scale = UnityEngine.Random.Range(Config.MinCircleScale, _maxCircleScale);
         var figure = GetFigure();
-        Debug.Log("I created " + figure.GetType() + " " + figure.Id);
         figure.onMove += MoveFigure;
         figure.onClicked += OnFigureClicked;
 
@@ -74,19 +72,23 @@ public class StartSpawnCommand : ICommand
             _prefabSettings.FiguresPrefabs[UnityEngine.Random.Range(0, _prefabSettings.FiguresPrefabs.Count)];
         var pool = _figureSpawnerModel.PoolsDictionary[figureType.GetType().Name];
         var figure = pool.Get();
+        Debug.LogError("Get Old Fig " + figure.Id +" "+figureType.GetType());
         figure.Id = _id;
         _id++;
+        Debug.LogError("Get New Fig " + figure.Id +" "+figureType.GetType());
         return figure;
     }
 
     private void ReleaseFigure(Figure figure)
     {
+        Debug.LogError("Finish Move " + figure.Id);
         var pool = _figureSpawnerModel.PoolsDictionary[figure.GetType().Name];
         pool.Release(figure);
     }
 
     private void OnCompleteScale(Figure figure, Tween tween)
     {
+        Debug.LogError("OnCompleteScale " + figure.Id);
         _figureSpawnerModel.Tweens[figure.Id].Kill();
         _figureSpawnerModel.OnFigureClick?.Invoke(figure.Scale, _maxCircleScale);
         ReleaseFigure(figure);
@@ -110,6 +112,7 @@ public class StartSpawnCommand : ICommand
 
     private void MoveFigure(Figure figure, float height)
     {
+        Debug.LogError("Start Move " + figure.Id);
         var startPosition = figure.transform.position;
         var finishPosition = new Vector3(startPosition.x, -_screenBounds.y - height, startPosition.z);
         var tween = figure.transform.DOMove(finishPosition, figure.Speed).SetSpeedBased().SetEase(Ease.Linear);

@@ -72,7 +72,7 @@ public class LevelUIMediator : MediatorBase
         _levelUIView.CompleteGame();
     }
 
-    public void OnResetGame()
+    private void OnResetGame()
     {
         SignalBus.Fire<ResetGameCommandSignal>();
     }
