@@ -12,4 +12,5 @@ public class FigureSpawnerModel
     public CancellationTokenSource SpawnerTokenSource;
     public Action<float, float> OnFigureClick;
     public int GameLevel = 1;
+    public List<Figure> ActiveFigures;
 }

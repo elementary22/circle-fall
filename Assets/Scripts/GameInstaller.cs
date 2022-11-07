@@ -52,6 +52,5 @@ public class GameInstaller : MonoInstaller
 
         Container.BindInterfacesAndSelfTo<FigureFactory>().AsCached();
         Container.BindFactory<Object, Figure, Figure.Factory>().FromFactory<FigureFactory>();
-
     }
 }

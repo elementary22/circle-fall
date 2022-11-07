@@ -1,26 +1,27 @@
-﻿using UnityEngine;
-
-public class StopSpawnCommand : ICommand
+﻿public class StopSpawnCommand : ICommand
 {
     private readonly FigureSpawnerModel _figureSpawnerModel;
-    private Transform _container;
 
-    public StopSpawnCommand(FigureSpawnerModel figureSpawnerModel, FigureContainerView container)
+    public StopSpawnCommand(FigureSpawnerModel figureSpawnerModel)
     {
         _figureSpawnerModel = figureSpawnerModel;
-        _container = container.transform;
     }
     
     public void Execute()
     {
-        foreach (Transform child in _container)
+        _figureSpawnerModel.SpawnerTokenSource.Cancel();
+        ReturnActiveFiguresToPool();
+    }
+
+    private void ReturnActiveFiguresToPool()
+    {
+        foreach (var figure in _figureSpawnerModel.ActiveFigures)
         {
-            var figure = child.GetComponent<Figure>();
             var pool = _figureSpawnerModel.PoolsDictionary[figure.GetType().Name];
             pool.Release(figure);
         }
-        
-        _figureSpawnerModel.SpawnerTokenSource.Cancel();
+        _figureSpawnerModel.ActiveFigures.Clear();
+        _figureSpawnerModel.Tweens.Clear();
     }
 }
 

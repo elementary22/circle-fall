@@ -29,7 +29,7 @@ public class StartSpawnCommand : ICommand
     public void Execute()
     {
         _figureSpawnerModel.SpawnerTokenSource = new CancellationTokenSource();
-        SpawnFigures();
+        SpawnFigures().Forget();
     }
 
     private Vector2 GetScreenBounds(Camera camera)
@@ -39,10 +39,14 @@ public class StartSpawnCommand : ICommand
         return screenBounds;
     }
 
-    private void SpawnFigures()
+    private async UniTaskVoid SpawnFigures()
     {
-        CreateFigure();
-        SetSpawnDelay().Forget();
+        while (true)
+        {
+            CreateFigure();
+            var randomDelayTime = UnityEngine.Random.Range(_levelInfo.minTimeDelay, _levelInfo.maxTimeDelay);
+            await UniTask.Delay(TimeSpan.FromSeconds(randomDelayTime), false, PlayerLoopTiming.Update, _figureSpawnerModel.SpawnerTokenSource.Token);
+        }
     }
 
     private void CreateFigure()
@@ -72,27 +76,26 @@ public class StartSpawnCommand : ICommand
             _prefabSettings.FiguresPrefabs[UnityEngine.Random.Range(0, _prefabSettings.FiguresPrefabs.Count)];
         var pool = _figureSpawnerModel.PoolsDictionary[figureType.GetType().Name];
         var figure = pool.Get();
-        Debug.LogError("Get Old Fig " + figure.Id +" "+figureType.GetType());
         figure.Id = _id;
         _id++;
-        Debug.LogError("Get New Fig " + figure.Id +" "+figureType.GetType());
+        _figureSpawnerModel.ActiveFigures.Add(figure);
         return figure;
     }
 
     private void ReleaseFigure(Figure figure)
     {
-        Debug.LogError("Finish Move " + figure.Id);
         var pool = _figureSpawnerModel.PoolsDictionary[figure.GetType().Name];
+        var activeFigure = _figureSpawnerModel.ActiveFigures.Find(item => item.Id == figure.Id);
+        _figureSpawnerModel.ActiveFigures.Remove(activeFigure);
         pool.Release(figure);
     }
 
     private void OnCompleteScale(Figure figure, Tween tween)
     {
-        Debug.LogError("OnCompleteScale " + figure.Id);
-        _figureSpawnerModel.Tweens[figure.Id].Kill();
-        _figureSpawnerModel.OnFigureClick?.Invoke(figure.Scale, _maxCircleScale);
+        
         ReleaseFigure(figure);
         tween.onComplete = null;
+        _figureSpawnerModel.OnFigureClick?.Invoke(figure.Scale, _maxCircleScale);
     }
 
     private float GetFigureSpeed(float scale)
@@ -105,29 +108,23 @@ public class StartSpawnCommand : ICommand
     {
         if (_figureSpawnerModel.Tweens[figure.Id] == null)
             return;
-
-        var tween = figure.transform.DOScale(new Vector3(0f, 0f, 0f), ScaleDuration);
-        tween.onComplete += () => OnCompleteScale(figure, tween);
+        _figureSpawnerModel.Tweens[figure.Id].Kill();
+        _figureSpawnerModel.Tweens.Remove(figure.Id);
+        var tween = figure.transform.DOScale(Vector3.zero, ScaleDuration);
+        tween.OnComplete(() => OnCompleteScale(figure, tween)).WithCancellation(_figureSpawnerModel.SpawnerTokenSource.Token);
     }
-
+    
     private void MoveFigure(Figure figure, float height)
     {
-        Debug.LogError("Start Move " + figure.Id);
         var startPosition = figure.transform.position;
         var finishPosition = new Vector3(startPosition.x, -_screenBounds.y - height, startPosition.z);
         var tween = figure.transform.DOMove(finishPosition, figure.Speed).SetSpeedBased().SetEase(Ease.Linear);
         tween.OnComplete(() => ReleaseFigure(figure)).WithCancellation(_figureSpawnerModel.SpawnerTokenSource.Token);
         _figureSpawnerModel.Tweens.Add(figure.Id, tween);
     }
-
-    private async UniTaskVoid SetSpawnDelay()
-    {
-        var randomDelayTime = UnityEngine.Random.Range(_levelInfo.minTimeDelay, _levelInfo.maxTimeDelay);
-        await UniTask.Delay(TimeSpan.FromSeconds(randomDelayTime), false, PlayerLoopTiming.Update, _figureSpawnerModel.SpawnerTokenSource.Token);
-        SpawnFigures();
-    }
 }
 
 public class StartSpawnCommandSignal
 {
+
 }

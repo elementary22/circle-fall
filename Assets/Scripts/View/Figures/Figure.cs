@@ -12,19 +12,20 @@ public class Figure : MonoBehaviour, iPoolable
 
     public Action<Figure, float> onMove;
     public Action<Figure> onClicked;
-
+    
     public void Init(float scale, float speed, Vector2 screenBounds)
     {
         SetSize(scale);
         SetColor();
         SetSpeed(speed);
         SetTransformPosition(screenBounds);
-        onMove?.Invoke(this, _spriteRenderer.bounds.size.y / 2);
+        onMove?.Invoke(this, _spriteRenderer.bounds.size.y * 0.5f);
     }
 
     protected void OnMouseDown()
     {
         onClicked?.Invoke(this);
+        onClicked = null;
     }
 
     private void SetSize(float scale)

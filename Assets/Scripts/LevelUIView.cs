@@ -89,7 +89,7 @@ public class LevelUIView : MonoBehaviour, IView
     {
         _scoreText.gameObject.SetActive(true);
         _timerText.gameObject.SetActive(true);
-        _playButton.interactable = false;
+        _playButton.gameObject.SetActive(false);
         SetTimer();
         
         _signalBus.Fire<OnPlayViewSignal>();
@@ -110,7 +110,6 @@ public class LevelUIView : MonoBehaviour, IView
     {
         _scoreText.gameObject.SetActive(false);
         _timerText.gameObject.SetActive(false);
-        _playButton.interactable = true;
         StopTimer();
         ResetScore();
     }
@@ -151,6 +150,7 @@ public class LevelUIView : MonoBehaviour, IView
 
     private void CheckLevelCompleted()
     {
+        
         if (_score >= _levelInfo.scoreGoal)
             _signalBus.Fire<OnLevelCompleteViewSignal>();
     }

@@ -21,6 +21,6 @@ public class Pool
                 return newFigure;
             },
             item => item.GetFromPool(), item => item.ReturnToPool(), item => item.DestroyPoolObject(),
-            false, 5, 10);
+            true, 5, 10);
     }
 }

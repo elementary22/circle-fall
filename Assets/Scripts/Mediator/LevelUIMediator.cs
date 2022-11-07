@@ -1,4 +1,5 @@
-﻿using Zenject;
+﻿using UnityEngine;
+using Zenject;
 
 public class LevelUIMediator : MediatorBase
 {
@@ -64,6 +65,7 @@ public class LevelUIMediator : MediatorBase
     
     private void OnLevelComplete()
     {
+        Debug.Log("On Level Complete");
         SignalBus.Fire<CheckLevelCompleteCommandSignal>();
     }
 

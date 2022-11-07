@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.Pool;
 
 public class CreateFigureSpawnerCommand : ICommand
@@ -22,6 +21,7 @@ public class CreateFigureSpawnerCommand : ICommand
     {
         InitPool();
         CreateFigurePools();
+        CreateActiveList();
     }
 
     private void InitPool()
@@ -40,6 +40,12 @@ public class CreateFigureSpawnerCommand : ICommand
             _figureSpawnerModel.PoolsDictionary.Add(figureType, pool);
         }
     }
+
+    private void CreateActiveList()
+    {
+        _figureSpawnerModel.ActiveFigures = new List<Figure>();
+    }
+    
 }
 
 public class OnApplicationLoadedCommandSignal 

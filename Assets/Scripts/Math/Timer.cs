@@ -10,19 +10,21 @@ public class Timer : ITickable
     private string _secondMinute;
     private string _firstSecond;
     private string _secondSecond;
-    private bool isTicking;
+    private bool _isTicking;
 
     public Action<string> onChangeTimer;
 
     public void StartTimer()
     {
-        isTicking = true;
+        Debug.Log("Start Timer");
+        if(_isTicking) return;
+        _isTicking = true;
         StartTimerAsync().Forget();
     }
 
     public void StopTimer()
     {
-        isTicking = false;
+        _isTicking = false;
         _timer = 0f;
     }
 
@@ -42,7 +44,7 @@ public class Timer : ITickable
     
     private async UniTaskVoid StartTimerAsync()
     {
-        while (isTicking)
+        while (_isTicking)
         {
             UpdateTimerDisplay(_timer);
             await UniTask.Delay(TimeSpan.FromSeconds(1f));
