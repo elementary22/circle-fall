@@ -1,25 +1,18 @@
 ﻿using UnityEngine;
 using System;
-using Cysharp.Threading.Tasks;
 using Zenject;
 
 public class Timer : ITickable
 {
     private float _timer;
-    private string _firstMinute;
-    private string _secondMinute;
-    private string _firstSecond;
-    private string _secondSecond;
     private bool _isTicking;
 
-    public Action<string> onChangeTimer;
+    public Action<string> OnChangeTimer;
 
     public void StartTimer()
     {
-        Debug.Log("Start Timer");
         if(_isTicking) return;
         _isTicking = true;
-        StartTimerAsync().Forget();
     }
 
     public void StopTimer()
@@ -33,27 +26,13 @@ public class Timer : ITickable
         float minutes = Mathf.FloorToInt(time / 60);
         float seconds = Mathf.FloorToInt(time % 60);
 
-        var currentTime = $"{minutes:00}{seconds:00}";
-
-        _firstMinute = currentTime[0].ToString();
-        _secondMinute = currentTime[1].ToString();
-        _firstSecond = currentTime[2].ToString();
-        _secondSecond = currentTime[3].ToString();
-        onChangeTimer?.Invoke($"{_firstMinute}{_secondMinute} : {_firstSecond}{_secondSecond}");
-    }
-    
-    private async UniTaskVoid StartTimerAsync()
-    {
-        while (_isTicking)
-        {
-            UpdateTimerDisplay(_timer);
-            await UniTask.Delay(TimeSpan.FromSeconds(1f));
-            _timer += 1;
-        }
+        OnChangeTimer?.Invoke($"{minutes:00}:{seconds:00}");
     }
 
     public void Tick()
     {
-        throw new NotImplementedException();
+        if (!_isTicking) return;
+        UpdateTimerDisplay(_timer);
+        _timer += Time.deltaTime;
     }
 }

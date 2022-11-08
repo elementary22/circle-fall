@@ -17,7 +17,6 @@ public class LevelUIView : MonoBehaviour, IView
     [SerializeField] private Button _closeButton;
     
     private LevelInfo _levelInfo;
-    private Timer _timer;
     private int _score;
     private Coroutine _timerRoutine;
     private Tween _scoreTween;
@@ -27,11 +26,9 @@ public class LevelUIView : MonoBehaviour, IView
     public void Init(LevelInfo info)
     {
         _levelInfo = info;
-        _timer = new Timer();
-        
+
         _playButton.onClick.AddListener(StartLevel);
         _closeButton.onClick.AddListener(OnClose);
-        _timer.onChangeTimer += UpdateTimer;
 
         GetLevelBackground();
     }
@@ -40,7 +37,7 @@ public class LevelUIView : MonoBehaviour, IView
     {
         _signalBus.Fire(new OnViewEnableViewSignal(this));
     }
-    // CHECK THIS 
+
     private void OnApplicationQuit()
     {
         _signalBus.TryFire(new OnViewDisableViewSignal(this));
@@ -90,16 +87,11 @@ public class LevelUIView : MonoBehaviour, IView
         _scoreText.gameObject.SetActive(true);
         _timerText.gameObject.SetActive(true);
         _playButton.gameObject.SetActive(false);
-        SetTimer();
-        
+
         _signalBus.Fire<OnPlayViewSignal>();
+        _signalBus.Fire<OnStartTimerViewSignal>();
     }
-    
-    private void SetTimer()
-    {
-        _timer.StartTimer();
-    }
-    
+
     private void OnClose()
     {
         StopGame();
@@ -110,7 +102,7 @@ public class LevelUIView : MonoBehaviour, IView
     {
         _scoreText.gameObject.SetActive(false);
         _timerText.gameObject.SetActive(false);
-        StopTimer();
+        _signalBus.Fire<OnStopTimerViewSignal>();
         ResetScore();
     }
 
@@ -120,12 +112,7 @@ public class LevelUIView : MonoBehaviour, IView
         _scoreText.text = _score.ToString();
     }
 
-    private void StopTimer()
-    {
-        _timer.StopTimer();
-    }
-
-    private void UpdateTimer(string time)
+    public void UpdateTimer(string time)
     {
         _timerText.text = time;
     }
@@ -167,6 +154,5 @@ public class LevelUIView : MonoBehaviour, IView
     {
         _playButton.onClick.RemoveListener(StartLevel);
         _closeButton.onClick.RemoveListener(OnClose);
-        _timer.onChangeTimer -= UpdateTimer;
     }
 }

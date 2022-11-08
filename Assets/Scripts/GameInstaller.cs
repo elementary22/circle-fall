@@ -15,6 +15,7 @@ public class GameInstaller : MonoInstaller
 
         Container.BindInterfacesAndSelfTo<LevelController>().AsSingle().NonLazy();
         Container.BindInterfacesAndSelfTo<LevelUIMediator>().AsSingle();
+        Container.BindInterfacesAndSelfTo<Timer>().AsSingle();
         Container.Bind<FigureSpawnerModel>().AsSingle();
 
         #region ViewSignals
@@ -25,6 +26,8 @@ public class GameInstaller : MonoInstaller
         Container.DeclareSignal<OnCloseViewSignal>();
         Container.DeclareSignal<OnLevelCompleteViewSignal>();
         Container.DeclareSignal<OnResetGameViewSignal>();
+        Container.DeclareSignal<OnStartTimerViewSignal>();
+        Container.DeclareSignal<OnStopTimerViewSignal>();
 
         #endregion
         
@@ -49,6 +52,12 @@ public class GameInstaller : MonoInstaller
         
         Container.DeclareSignal<ResetGameCommandSignal>();
         Container.BindSignal<ResetGameCommandSignal>().ToMethod<ResetGameCommand>(signal => signal.Execute).FromNew();
+        
+        Container.DeclareSignal<StartTimerCommandSignal>();
+        Container.BindSignal<StartTimerCommandSignal>().ToMethod<StartTimerCommand>(signal => signal.Execute).FromNew();
+        
+        Container.DeclareSignal<StopTimerCommandSignal>();
+        Container.BindSignal<StopTimerCommandSignal>().ToMethod<StopTimerCommand>(signal => signal.Execute).FromNew();
 
         Container.BindInterfacesAndSelfTo<FigureFactory>().AsCached();
         Container.BindFactory<Object, Figure, Figure.Factory>().FromFactory<FigureFactory>();

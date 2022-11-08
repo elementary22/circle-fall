@@ -37,3 +37,13 @@ public class OnResetGameViewSignal : ISignal
 {
     
 }
+
+public class OnStartTimerViewSignal : ISignal
+{
+    
+}
+
+public class OnStopTimerViewSignal : ISignal
+{
+    
+}

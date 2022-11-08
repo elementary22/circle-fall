@@ -9,13 +9,14 @@ public class StartSpawnCommand : ICommand
 {
     private readonly PrefabSettings _prefabSettings;
     private readonly FigureSpawnerModel _figureSpawnerModel;
-    private LevelInfo _levelInfo;
+    private readonly LevelInfo _levelInfo;
+    
+    private readonly float _maxCircleScale;
+    private readonly Vector2 _screenBounds;
     
     private const float ScaleDuration = 0.25f;
-    private const float SpeedCoefficient = 10f;
+    private float _speedCoefficient = 10f;
     private int _id;
-    private float _maxCircleScale;
-    private Vector2 _screenBounds;
     
     public StartSpawnCommand(PrefabSettings prefabSettings, LevelSettings levelSettings, FigureSpawnerModel figureSpawnerModel)
     {
@@ -100,7 +101,8 @@ public class StartSpawnCommand : ICommand
 
     private float GetFigureSpeed(float scale)
     {
-        var speed = _levelInfo.levelSpeed / scale * SpeedCoefficient;
+        _speedCoefficient = scale > 1 ? 20f : 10f;
+        var speed = _levelInfo.levelSpeed / scale * _speedCoefficient;
         return speed;
     }
 
